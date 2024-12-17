@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "iocpy"
+dynamic = ["version"]
+dependencies = []
+requires-python = ">= 3.11"
+authors = [
+  {name = "Manuel Kiefer", email = "manuel.kiefer@multivac.de"},
+]
+maintainers = []
+description = "Simple ioc framework for python"
+readme = {file = "README.md", content-type = "text/markdown"}
+
+[tool.hatch.version]
+path = "__version__"
+source = "regex"
+pattern = "^(?P<version>.+)$"
+
+[tool.hatch.build.targets.wheel]
+packages = ["iocpy"]
+
+[tool.coverage.report]
+exclude_also = [
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+    ]
