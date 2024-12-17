@@ -5,6 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "iocpy"
 dynamic = ["version"]
+license = "MIT"
 dependencies = []
 requires-python = ">= 3.11"
 authors = [
@@ -21,6 +22,7 @@ pattern = "^(?P<version>.+)$"
 
 [tool.hatch.build.targets.wheel]
 packages = ["iocpy"]
+core-metadata-version = "2.3"
 
 [tool.coverage.report]
 exclude_also = [

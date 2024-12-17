@@ -100,3 +100,12 @@ Run coverage check
 ```powershell
 python -m coverage run -m unittest discover -s tests -p test*.py; python -m coverage report; python -m coverage html
 ```
+
+Build and deploy
+
+```BASH
+
+python -m build
+python -m twine upload dist/*
+
+```
