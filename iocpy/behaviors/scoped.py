@@ -12,8 +12,9 @@ class IocScoped(IInstanceBehavior):
     """
 
     def __init__(self, type_: type, factory:
-                 Callable[[IocContext], object] | Callable[[
-                     IocContext], Generator[Any, None, None]]
+                 Callable[[IocContext], object] |
+                 Callable[[IocContext], Callable[[IocContext], Generator[Any, None, None]]] |
+                 Callable[[IocContext], Generator[Any, None, None]]
                  ):
         self._type = type_
         self._factory = factory
@@ -29,25 +30,28 @@ class IocScoped(IInstanceBehavior):
         if scoped is not None:
             return scoped
 
+        # TODO: We most likely should cache this in the future for performance reasons
         if inspect.isgeneratorfunction(self._factory):
-            scoped = self.solve_generator(
+            scoped = self.handle_generator(
                 context, self._factory, context.stack)
             context._instances[self._type] = scoped
             return scoped
 
         if callable(self._factory):
             scoped = self._factory(context)
+            if inspect.isgeneratorfunction(scoped):
+                scoped = self.handle_generator(
+                    context, scoped, context.stack)
             context._instances[self._type] = scoped
             return scoped
 
         raise ValueError("Failed to resolve, invalid factory")
 
-    def solve_generator(self, context: IocContext,
-                        factory: Callable[[IocContext],
-                                          Generator[Any, None, None]],
-                        stack: ExitStack
-                        ) -> object:
-
+    def handle_generator(self, context: IocContext,
+                         factory: Callable[[IocContext],
+                                           Generator[Any, None, None]],
+                         stack: ExitStack
+                         ) -> object:
         cm = contextmanager(factory)(context)
         scoped = stack.enter_context(cm)
         return scoped

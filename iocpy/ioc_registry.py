@@ -1,5 +1,5 @@
 
-from typing import Callable
+from typing import Any, Callable, Generator
 from iocpy.behaviors.scoped import IocScoped
 from iocpy.behaviors.singleton import IocSingleton
 from iocpy.behaviors.transient import IocTransient
@@ -66,9 +66,16 @@ class IocRegistry(IBehaviorRegistry):
         transient = IocTransient(type_, instance)
         self.register(type_, transient)
 
-    def register_scoped(self, type_: type, instance: Callable[[IInstanceProvider], object]) -> None:
+    def register_scoped(self, type_: type, instance:
+                        Callable[[IInstanceProvider], object] |
+                        Callable[[IInstanceProvider], Callable[[IInstanceProvider], Generator[Any, None, None]]] |
+                        Callable[[IInstanceProvider],
+                                 Generator[Any, None, None]]
+                        ) -> None:
         """Register a scoped instance in the container.
-        This will create a new instance every time `get` is called.
+        This will create only one instance per scope.
+
+        Errors will be raised if the instance is resolved outside of a scope.
 
         Example:
         ```PYTHON
@@ -76,6 +83,9 @@ class IocRegistry(IBehaviorRegistry):
         container.register_scoped(MyInterface, lambda provider: MyImplementation())
 
         my_instance = container.get(MyInterface)
+
+        ```
+        show in to the `README.md` file for more complex examples with sessions and generators.
 
         :param type_: _description_
         :type type_: type

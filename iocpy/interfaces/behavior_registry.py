@@ -21,5 +21,6 @@ class IBehaviorRegistry(ABC):
                            instance: Callable[[IInstanceProvider], object]) -> None:
         ...
 
+    @abstractmethod
     def register_scoped(self, type_: type, instance: Callable[[IInstanceProvider], object]) -> None:
         ...

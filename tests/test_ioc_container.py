@@ -1,4 +1,5 @@
 
+from typing import Generator
 from unittest import TestCase
 from unittest.mock import MagicMock
 
@@ -52,6 +53,19 @@ class TestIocContainer(TestCase):
 
         # Assert
         self.assertEqual(call_spy.call_count, 2)
+
+    def test_RegisterDependentScope_ResolvesDependant(self):
+        # Arrange
+        class TestImplementation:
+            def get_session(self, *args, ** kwargs) -> Generator[int, None, None]:
+                yield 1
+        container = IocContainer()
+        container.register_instance(object, TestImplementation())
+        container.register_scoped(int, lambda x: x.get(object).get_session)
+
+        # Act & Assert
+        with container.create_scope() as scope:
+            self.assertEqual(scope.get(int), 1)
 
     def test_ResolveScopedInRootScope_ThrowsScopeError(self):
         # Arrange

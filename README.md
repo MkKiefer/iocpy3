@@ -78,6 +78,47 @@ ioc.get(LoveCalculator).print()
 
 ```
 
+### Scoped
+
+Register a scoped resource this can be used to get the same instance every time as long as you are in the scope.
+Another usage could be session aware stuff like opening and closing a db session within that scope.
+
+```Python
+
+class Database():
+    def __init__(self, connection_string: str):
+        self._cs = connection_string
+        self._session_factory = SessionFactory()
+
+    def get_session(self) -> Generator[Session, None, None]
+        session = self._session_factory()
+        try:
+            yield session
+        except:
+            session.rollback()
+        finally:
+            session.close()
+
+
+ioc = IOCContainer()
+ioc.register_singleton(AppConfig, AppConfig(connection_string="Secret123"))
+ioc.register_singleton(Database, lambda x: Database(
+    connection_string=x.get(AppConfig).connection_string
+    )
+)
+ioc.register_scoped(Session, lambda: x.get(Database).get_session)
+ioc.register_transient(LoveCalculator, lambda x: LoveCalculator(
+    db_session = x.get(Session)
+))
+
+#DB Session gets automatically closed when leaving the scope 
+with ioc.create_scope() as scope:
+    scope.get(LoveCalculator).print()
+
+
+
+```
+
 ## Development
 
 Run basic tests
