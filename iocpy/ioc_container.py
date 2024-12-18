@@ -3,6 +3,7 @@
 from typing import Any, Callable, Generator, Type, TypeVar, ContextManager
 from iocpy.interfaces.instance_behavior import IInstanceBehavior
 from iocpy.interfaces.instance_provider import IInstanceProvider
+from iocpy.interfaces.ioc_context import IIocContext
 from iocpy.ioc_context import IocContext
 from iocpy.ioc_registry import IocRegistry
 
@@ -37,5 +38,21 @@ class IocContainer:
     def get(self, type_: Type[T]) -> T:
         return self._root_context.get(type_)
 
-    def create_scope(self) -> ContextManager[IocContext]:
+    def create_scope(self) -> ContextManager[IIocContext]:
         return self._root_context.create_scope()
+
+    def __call__(self) -> Generator[IIocContext, None, None]:
+        """Callable generator scope, can be used with FastAPI dependency injection
+        Example:
+        ```PYTHON
+
+        IOC = IocContainer()
+
+        app.get("/items/{item_id}")
+        async def read_item(item_id: int, scope: IIocContext = Depends(IOC)):
+            item = scope.get(ItemService).get_item(item_id)
+            return item
+        ```
+        """
+        with self.create_scope() as context:
+            yield context

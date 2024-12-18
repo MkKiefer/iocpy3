@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from contextlib import ExitStack
-from typing import Type, TypeVar, ContextManager
+from typing import Generator, Type, TypeVar, ContextManager
 
 
 T = TypeVar("T")
@@ -16,6 +16,10 @@ class IIocContext(ABC):
 
     @abstractmethod
     def create_scope(self) -> ContextManager['IIocContext']:
+        ...
+
+    @abstractmethod
+    def create_generator_scope(self) -> Generator['IIocContext', None, None]:
         ...
 
     @abstractmethod
