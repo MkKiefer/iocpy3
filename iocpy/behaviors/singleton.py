@@ -2,7 +2,7 @@
 # pylint: disable=too-few-public-methods
 from typing import Callable
 from iocpy.interfaces.instance_behavior import IInstanceBehavior
-from iocpy.interfaces.instance_provider import IInstanceProvider
+from iocpy.ioc_context import IocContext
 
 
 class IocSingleton(IInstanceBehavior):
@@ -12,17 +12,23 @@ class IocSingleton(IInstanceBehavior):
     :type IInstanceBehavior: _type_
     """
 
-    def __init__(self, type_: type, instance: object | Callable[[IInstanceProvider], object]):
+    def __init__(self, type_: type, instance: object | Callable[[IocContext], object]):
         self._type = type_
         self._instance = instance
 
         self._singleton: object | None = None
 
-    def resolve(self, provider: IInstanceProvider) -> object:
+    def resolve(self, context: IocContext) -> object:
         """Get the instance and follow dependency"""
-        if self._singleton is None:
+        root = context.get_root()
+        singleton = root.instances.get(self._type, None)
+        if singleton is not None:
+            return singleton
+        else:
             if callable(self._instance):
-                self._singleton = self._instance(provider)
+                singleton = self._instance(context)
+                root.instances[self._type] = singleton
             else:
-                self._singleton = self._instance
-        return self._singleton
+                singleton = self._instance
+                root.instances[self._type] = singleton
+            return singleton

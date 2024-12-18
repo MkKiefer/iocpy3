@@ -1,8 +1,10 @@
 """instance behavior interface."""
 # pylint: disable=too-few-public-methods
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
-from iocpy.interfaces.instance_provider import IInstanceProvider
+from typing import Generic, TypeVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from iocpy.ioc_context import IocContext
 
 
 T = TypeVar("T")
@@ -15,5 +17,5 @@ class IInstanceBehavior(ABC, Generic[T]):
     """
 
     @abstractmethod
-    def resolve(self, provider: IInstanceProvider) -> T:
+    def resolve(self, context: 'IocContext') -> T:
         """Resolves a instance, and recuse over dependency's"""
