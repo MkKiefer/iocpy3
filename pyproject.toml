@@ -3,17 +3,46 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "iocpy"
+name = "iocpy3"
 dynamic = ["version"]
 license = "MIT"
 dependencies = []
 requires-python = ">= 3.11"
 authors = [
-  {name = "Manuel Kiefer", email = "manuel.kiefer@multivac.de"},
+  {name = "MkKiefer"},
 ]
 maintainers = []
 description = "Simple ioc framework for python"
 readme = {file = "README.md", content-type = "text/markdown"}
+
+
+[project.urls]
+Repository = "https://github.com/MkKiefer/iocpy.git"
+Issues = "https://github.com/MkKiefer/iocpy/issues"
+
+[dependency-groups]
+dev = [
+    "pylint>=3.3.3",
+    "pytest>=8.3.4",
+    "coverage>=7.6.10",
+    "parameterized>=0.9.0",
+]
+
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.scripts]
+test = "python -m unittest discover -v -s tests -p test*.py"
+lint = "pylint iocpy"
+"coverage:test" = "python -m coverage run -m unittest discover -v -s tests -p test*.py"
+"coverage:export" = "coverage xml"
+"coverage:report" = "coverage report -m"
+coverage = { composite = [
+    "coverage:test",
+    "coverage:report",
+    "coverage:export",
+] }
 
 [tool.hatch.version]
 path = "__version__"
@@ -22,7 +51,6 @@ pattern = "^(?P<version>.+)$"
 
 [tool.hatch.build.targets.wheel]
 packages = ["iocpy"]
-core-metadata-version = "2.3"
 
 [tool.coverage.report]
 exclude_also = [

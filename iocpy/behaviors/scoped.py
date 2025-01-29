@@ -1,4 +1,4 @@
-
+"""Scoped behavior implementation"""
 from contextlib import ExitStack, contextmanager
 import inspect
 from typing import Any, Callable, Generator
@@ -20,13 +20,24 @@ class IocScoped(IInstanceBehavior):
         self._factory = factory
 
     def resolve(self, context: IocContext) -> object:
-        """Get the instance and follow dependency"""
+        """Resolve the instance and follow dependencies
+
+        Args:
+            context (IocContext): The context used to resolve the instance.
+
+        Raises:
+            ValueError: Invalid factory / callable type
+            ValueError: Scoped instances can't be resolved outside of a scope
+
+        Returns:
+            object: The resolved instance.
+        """
 
         if context.stack is None:
             raise ValueError(
                 "Scoped instances can't be resolved outside of a scope")
 
-        scoped = context._instances.get(self._type, None)
+        scoped = context.instances.get(self._type, None)
         if scoped is not None:
             return scoped
 
@@ -34,7 +45,7 @@ class IocScoped(IInstanceBehavior):
         if inspect.isgeneratorfunction(self._factory):
             scoped = self.handle_generator(
                 context, self._factory, context.stack)
-            context._instances[self._type] = scoped
+            context.instances[self._type] = scoped
             return scoped
 
         if callable(self._factory):
@@ -42,7 +53,7 @@ class IocScoped(IInstanceBehavior):
             if inspect.isgeneratorfunction(scoped):
                 scoped = self.handle_generator(
                     context, scoped, context.stack)
-            context._instances[self._type] = scoped
+            context.instances[self._type] = scoped
             return scoped
 
         raise ValueError("Failed to resolve, invalid factory")
@@ -52,6 +63,18 @@ class IocScoped(IInstanceBehavior):
                                            Generator[Any, None, None]],
                          stack: ExitStack
                          ) -> object:
+        """Get instance from generator function and 
+        add it to the context exit stack
+
+        Args:
+            context (IocContext): The context to resolve nested dependencies.
+            factory (Callable[[IocContext], Generator[Any, None, None]]): 
+            The generator function to resolve.
+            stack (ExitStack): The exit stack to add the generator to.
+
+        Returns:
+            object: The instance resolved from the generator.
+        """
         cm = contextmanager(factory)(context)
         scoped = stack.enter_context(cm)
         return scoped

@@ -24,11 +24,11 @@ class IocSingleton(IInstanceBehavior):
         singleton = root.instances.get(self._type, None)
         if singleton is not None:
             return singleton
+
+        if callable(self._instance):
+            singleton = self._instance(context)
+            root.instances[self._type] = singleton
         else:
-            if callable(self._instance):
-                singleton = self._instance(context)
-                root.instances[self._type] = singleton
-            else:
-                singleton = self._instance
-                root.instances[self._type] = singleton
-            return singleton
+            singleton = self._instance
+            root.instances[self._type] = singleton
+        return singleton

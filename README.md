@@ -24,7 +24,7 @@ class MyClass(MyInterface):
         print(f"{self.name} I did it")
 
 ioc = IOCContainer()
-ioc.register_singleton(MyInterface, MyClass("Manuel"))
+ioc.register_singleton(MyInterface, MyClass("John Doe"))
 ioc.get(MyInterface).do_it()
 ```
 
@@ -40,7 +40,7 @@ class AppConfig(BaseModel):
     user_name: str
 
 ioc = IOCContainer()
-ioc.register_singleton(AppConfig, AppConfig(user_name="Manuel"))
+ioc.register_singleton(AppConfig, AppConfig(user_name="John Doe"))
 ioc.register_singleton(MyInterface, lambda x: MyClass(
     name=x.get(AppConfig).user_name)
     )
@@ -64,16 +64,16 @@ class LoveCalculator():
         print(f"[{self.name}] -> {self.in_love_percent}%")
 
 ioc = IOCContainer()
-ioc.register_singleton(AppConfig, AppConfig(user_name="Manuel"))
+ioc.register_singleton(AppConfig, AppConfig(user_name="John Doe"))
 ioc.register_transient(LoveCalculator, lambda x: LoveCalculator(
     name=x.get(AppConfig).username)
     )
 
 ioc.get(LoveCalculator).print()
-# output: Manuel -> 20%
+# output: John Doe -> 20%
 
 ioc.get(LoveCalculator).print()
-# output: Manuel -> 53%
+# output: John Doe -> 53%
 
 
 ```
@@ -124,29 +124,19 @@ with ioc.create_scope() as scope:
 Run basic tests
 
 ```BASH
-
-# Option 1
-# Install package local to prevent module not found errors
-python -m pip install -e .
-pytest tests/
-
-#option 2
-# By using this approach the sys part gets automatically added
-python -m pytest tests/
-
+pdm test
 ```
 
 Run coverage check
 
-```powershell
-python -m coverage run -m unittest discover -s tests -p test*.py; python -m coverage report; python -m coverage html
+```bash
+pdm coverage
 ```
 
 Build and deploy
 
 ```BASH
 
-python -m build
-python -m twine upload dist/*
-
+pdm build
+pdm publish
 ```

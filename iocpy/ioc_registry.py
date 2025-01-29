@@ -1,4 +1,4 @@
-
+"""This module implements the IIocRegistry interface."""
 from typing import Any, Callable, Generator
 from iocpy.behaviors.scoped import IocScoped
 from iocpy.behaviors.singleton import IocSingleton
@@ -9,15 +9,48 @@ from iocpy.interfaces.instance_provider import IInstanceProvider
 
 
 class IocRegistry(IBehaviorRegistry):
+    """
+    The ioc registry contains all behavior like 
+    singleton, transient, and scoped instances.
+    The registry in mainly used by the `IocContext` to resolve instances.
+
+    The class might change and is not a public API.
+    Use the `IocContainer` to register instances that wraps this registry.
+
+    Args:
+        IBehaviorRegistry (_type_): 
+        The behavior registry is used to register different types of behaviors
+    """
+
     def __init__(self):
         self._registry: dict[type, IInstanceBehavior] = {}
 
     def register(self, type_: type, instance: IInstanceBehavior) -> None:
+        """Register a custom instance behavior implementing `IInstanceBehavior`.
+
+        Args:
+            type_ (type): The type that should resolve to the instance
+            instance (IInstanceBehavior): The instance behavior
+
+        Raises:
+            ValueError: The type is already registered.
+        """
         if type_ in self._registry:
             raise ValueError(f"Type {type_} already registered")
         self._registry[type_] = instance
 
     def get_behavior(self, type_: type) -> IInstanceBehavior:
+        """Get the instance behavior for a type.
+
+        Args:
+            type_ (type): The type to get the behavior for.
+
+        Raises:
+            ValueError: The type is not registered.
+
+        Returns:
+            IInstanceBehavior: The instance behavior for the type.
+        """
         if type_ not in self._registry:
             raise ValueError(f"Type {type_} not registered")
         return self._registry[type_]
@@ -68,7 +101,8 @@ class IocRegistry(IBehaviorRegistry):
 
     def register_scoped(self, type_: type, instance:
                         Callable[[IInstanceProvider], object] |
-                        Callable[[IInstanceProvider], Callable[[IInstanceProvider], Generator[Any, None, None]]] |
+                        Callable[[IInstanceProvider],
+                                 Callable[[IInstanceProvider], Generator[Any, None, None]]] |
                         Callable[[IInstanceProvider],
                                  Generator[Any, None, None]]
                         ) -> None:
